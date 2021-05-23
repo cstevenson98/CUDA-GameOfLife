@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <stdio.h>
 #include <cassert>
@@ -7,15 +8,37 @@
 #include "cudaGL.h"
 #include "cuda_gl_interop.h"
 #include "golCUDA.h"
+#include "vectors.h"
+#include "Shader.h"
 
 class CustomGraphicsPipeline
 {
    //private state variables
-   GLuint variable_x;
    public:
-      CustomGraphicsPipeline() : variable_x(1) { }
-      ~CustomGraphicsPipeline() {}
+      GLuint m_VBO;
+      Shader m_shader;
+      dim3 m_threads;
+      dim3 m_blocks;
+      unsigned int m_fullCellWidth;
+      unsigned int m_pointSize;
+      size_t m_BufferSize;
+      struct cudaGraphicsResource* m_resource;
+      
+      // Constructor
+      CustomGraphicsPipeline(dim3 threads, dim3 blocks, unsigned int fullCellWidth, unsigned int pointSize) 
+         :  m_threads       ( threads ),
+            m_blocks        ( blocks ),
+            m_fullCellWidth ( fullCellWidth ),
+            m_pointSize     ( pointSize )
+      {}
+
+      // Destructor
+      ~CustomGraphicsPipeline() 
+      {
+         glDisableVertexAttribArray(0);
+      }
 
       bool Init();
       void Draw();
+      
 };

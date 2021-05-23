@@ -6,10 +6,11 @@ LDFLAGS="$LDFLAGS -lglut"
 
 
 cd src/
+$CC Shader.cpp $LDFLAGS -c
 $CC golCUDA.cu $LDFLAGS -c
-$CC golPipeline.cpp $LDFLAGS -c
+$CC golPipeline.cu $LDFLAGS -c
 $CC main.cpp $LDFLAGS -c
 
-$CC golPipeline.o main.o $LDFLAGS -o main
+$CC Shader.o golCUDA.o golPipeline.o main.o $LDFLAGS -o main
 mv main ../main
 cd ..
