@@ -1,3 +1,5 @@
+#include "Utility.h"
+
 #include "golPipeline.h"
 #include <iostream>
 
@@ -8,10 +10,7 @@ bool CustomGraphicsPipeline::Init()
 
     glClearColor(Red, Green, Blue, Alpha);
     glPointSize(m_pointSize);
-
-    //Vector3f Vertices[1];
-    //Vertices[0] = Vector3f(0.0f, 0.0f, 0.0f);
-
+    
     // Init Buffer
     glGenBuffers(1, &m_VBO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
@@ -44,9 +43,6 @@ bool CustomGraphicsPipeline::Init()
 
 void CustomGraphicsPipeline::Draw()
 {
-
-    std::cout << "draw!" << std::endl;
-    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     unsigned int* m_DevState;
@@ -57,8 +53,8 @@ void CustomGraphicsPipeline::Draw()
 	cudaGraphicsResourceGetMappedPointer((void**)&m_DevState, &m_BufferSize, m_resource);
 
 	GolKernel_next<<<m_blocks, m_threads>>>(m_DevState, m_DevNextState);
-	cudaDeviceSynchronize();
-	cudaMemcpy(m_DevState, m_DevNextState, m_BufferSize, cudaMemcpyDeviceToDevice);
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaMemcpy(m_DevState, m_DevNextState, m_BufferSize, cudaMemcpyDeviceToDevice) );
 
 	cudaGraphicsUnmapResources(1, &m_resource, 0);
 	cudaFree(m_DevNextState);

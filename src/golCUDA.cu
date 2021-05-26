@@ -1,3 +1,5 @@
+#include <cstdio>
+
 #include "golCUDA.h"
 
 __global__ void GolKernel_random(unsigned int* cellData, float density, int seed)
@@ -18,11 +20,11 @@ __global__ void GolKernel_next(unsigned int* cellData, unsigned int* cellNext)
 	int xId = threadIdx.x + blockIdx.x * blockDim.x;
 	int yId = threadIdx.y + blockIdx.y * blockDim.y;
 	int idx = gridDim.x * blockDim.x * yId + xId;
-
+	
 	unsigned int state = cellData[idx];
 	int nextState;
 
-	if ((xId < (gridDim.x * blockDim.x)) && (xId > 0) && (yId > 0) && (yId < (gridDim.y * blockDim.y)))
+	if ((xId < (gridDim.x * blockDim.x - 1)) && (xId > 0) && (yId > 0) && (yId < (gridDim.y * blockDim.y - 1)))
 	{
 		unsigned int sum = 0;
 		for (int i = 0; i < 3; i++)
@@ -31,19 +33,16 @@ __global__ void GolKernel_next(unsigned int* cellData, unsigned int* cellNext)
 			{
 				idx = gridDim.x * blockDim.x * (yId + j - 1) + (xId + i - 1);
 				sum += cellData[idx];
-				//std::printf("%d", sum);
 			}
 		}
 		sum -= state;
 		nextState = ( sum==3 || (state==1 && sum==2) );
-	}
-	else {
+	} else {
 		nextState = 0;
 	}
 
 	idx = gridDim.x * blockDim.x * yId + xId;
 	cellNext[idx] = nextState;
-
 }
 
 __global__ void GolKernel_copy(unsigned int* cellData, unsigned int* cellNext)

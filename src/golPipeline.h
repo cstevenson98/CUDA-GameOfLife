@@ -9,7 +9,8 @@
 #include "cuda_gl_interop.h"
 #include "golCUDA.h"
 #include "vectors.h"
-#include "Shader.h"
+#include "openGLutils.h" 
+//#include "Shader.h"
 
 class CustomGraphicsPipeline
 {
