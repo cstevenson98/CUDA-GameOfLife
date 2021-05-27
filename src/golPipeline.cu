@@ -1,6 +1,6 @@
 #include "Utility.h"
 
-#include "lbPipeline.h"
+#include "golPipeline.h"
 #include <iostream>
 
 bool LatticeBoltzmannPipeline::Init()

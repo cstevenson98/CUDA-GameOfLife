@@ -4,7 +4,7 @@ CC=nvcc
 LDFLAGS=-lGLEW -lGLU -lGL -lglfw
 DEBUG=-lineinfo
 
-OBJ=src/main.o src/lbPipeline.o src/golCUDA.o src/openGLutils.o
+OBJ=src/main.o src/golPipeline.o src/golCUDA.o src/openGLutils.o
 all: $(OBJ)
 	$(CC) $(OBJ) $(LDFLAGS) $(DEBUG) -o main
 

@@ -5,19 +5,19 @@
 #include <cassert>
 #include <chrono>
 
-#include "lbPipeline.h"
+#include "golPipeline.h"
 
 const char* WindowTitle = "Lattice Boltzmann - GPU";
 
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
-unsigned int pointSize = 2;
+unsigned int pointSize = 1;
 
 const unsigned int threadsPerBlockX = 20;
-const unsigned int blockCountX = 30;
+const unsigned int blockCountX = 128;
 
 const unsigned int threadsPerBlockY = 20;
-const unsigned int blockCountY = 15;
+const unsigned int blockCountY = 72;
 
 const unsigned int widthX = threadsPerBlockX * blockCountX;
 const unsigned int widthY = threadsPerBlockY * blockCountY;
@@ -34,11 +34,14 @@ int main(void)
 {
 	GLFWwindow* window;
 	if (!glfwInit()) { return -1; }
-	window = glfwCreateWindow(widthX*pointSize, widthY*pointSize, WindowTitle, NULL, NULL);
+	glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+
+	window = glfwCreateWindow(widthX*pointSize, widthY*pointSize, WindowTitle, glfwGetPrimaryMonitor(), NULL);
 	if (!window){ glfwTerminate(); return -1; }
 
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
+	glViewport(0, 0, widthX*pointSize, widthY*pointSize);
 
 	if (glewInit() != GLEW_OK)
 		std::cout << "Something went wrong in GLEW init" << std::endl;

@@ -28,8 +28,8 @@ void main(void)
 	dx = (windowXY.y - windowXY.x) / float(widthX);
 	dy = (windowXY.w - windowXY.z) / float(widthY);
 
-	gl_Position = vec4(windowXY.x+dx/2 + xId * dx, windowXY.z+dy/2 + yId * dy, 0., 1.0);
-	//gl_Position = vec4(0., 0., 0., 1.0);
+	gl_Position = vec4(float(windowXY.x)+dx/2 + xId * dx, float(windowXY.z)+dy/2 + yId * dy, 0., 1.0);
+	//gl_Position = vec4(1., float(windowXY.z)+dy/2 + yId * dy, 0., 1.0);
 	vColor = vec4(
 				u_OnColour.x * float(state) + u_OffColour.x * (1 - float(state)),
 				u_OnColour.y * float(state) + u_OffColour.y * (1 - float(state)),

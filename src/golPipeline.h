@@ -33,9 +33,7 @@ class LatticeBoltzmannPipeline
       LatticeBoltzmannPipeline(dim3 threads, dim3 blocks, 
                               unsigned int widthX, unsigned int widthY, 
                               unsigned int pointSize) 
-         :  m_vb        ( VertexBuffer(widthX*widthY*sizeof(unsigned int)) ),
-	         m_shader	   ( Shader("shaders/GameOfLife.shader") ),
-            m_threads   ( threads ),
+         :  m_threads   ( threads ),
             m_blocks    ( blocks ),
             m_widthX    ( widthX ),
             m_widthY    ( widthY ),
