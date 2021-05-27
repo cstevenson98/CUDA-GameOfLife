@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CC=nvcc
-LDFLAGS=-lGLEW -lGLU -lGL -lglut
+LDFLAGS=-lGLEW -lGLU -lGL -lglfw
 DEBUG=-lineinfo
 
 OBJ=src/main.o src/lbPipeline.o src/golCUDA.o src/openGLutils.o

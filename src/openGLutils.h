@@ -88,6 +88,7 @@ private:
 	// ID allocated on VRAM
 public:
 	unsigned int m_RendererID;
+	VertexBuffer(){ };
 	VertexBuffer(unsigned int size);
 	~VertexBuffer();
 

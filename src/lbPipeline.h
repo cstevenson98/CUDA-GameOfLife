@@ -1,7 +1,6 @@
 #pragma once
 
 #include <GL/glew.h>
-#include <GL/freeglut.h>
 #include <stdio.h>
 #include <cassert>
 
@@ -12,33 +11,39 @@
 #include "openGLutils.h" 
 //#include "Shader.h"
 
-class CustomGraphicsPipeline
+class LatticeBoltzmannPipeline
 {
    //private state variables
    public:
-      GLuint m_VBO;
+      VertexBuffer m_vb;
+      VertexArray m_va;
+      VertexBufferLayout m_layout;
       Shader m_shader;
+
+      GLuint m_VBO;
       dim3 m_threads;
       dim3 m_blocks;
-      unsigned int m_fullCellWidthX;
-      unsigned int m_fullCellWidthY;
+      unsigned int m_widthX;
+      unsigned int m_widthY;
       unsigned int m_pointSize;
       size_t m_BufferSize;
       struct cudaGraphicsResource* m_resource;
       
       // Constructor
-      CustomGraphicsPipeline(dim3 threads, dim3 blocks, 
-                              unsigned int fullCellWidthX, unsigned int fullCellWidthY, 
+      LatticeBoltzmannPipeline(dim3 threads, dim3 blocks, 
+                              unsigned int widthX, unsigned int widthY, 
                               unsigned int pointSize) 
-         :  m_threads         ( threads ),
-            m_blocks          ( blocks ),
-            m_fullCellWidthX  ( fullCellWidthX ),
-            m_fullCellWidthY  ( fullCellWidthY ),
-            m_pointSize       ( pointSize )
+         :  m_vb        ( VertexBuffer(widthX*widthY*sizeof(unsigned int)) ),
+	         m_shader	   ( Shader("shaders/GameOfLife.shader") ),
+            m_threads   ( threads ),
+            m_blocks    ( blocks ),
+            m_widthX    ( widthX ),
+            m_widthY    ( widthY ),
+            m_pointSize ( pointSize )
       {}
 
       // Destructor
-      ~CustomGraphicsPipeline() 
+      ~LatticeBoltzmannPipeline() 
       {
          glDisableVertexAttribArray(0);
       }

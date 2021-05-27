@@ -1,65 +1,59 @@
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include <GL/freeglut.h>
 #include <stdio.h>
 #include <cassert>
+#include <chrono>
 
 #include "lbPipeline.h"
 
-const char* WindowTitle = "Conway's Game of Life";
+const char* WindowTitle = "Lattice Boltzmann - GPU";
 
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
-const unsigned int pointSize = 2;
+unsigned int pointSize = 2;
 
 const unsigned int threadsPerBlockX = 20;
-const unsigned int blockCountX = 64;
+const unsigned int blockCountX = 30;
 
 const unsigned int threadsPerBlockY = 20;
-const unsigned int blockCountY = 36;
+const unsigned int blockCountY = 15;
 
-const unsigned int fullCellWidthX = threadsPerBlockX * blockCountX;
-const unsigned int fullCellWidthY = threadsPerBlockY * blockCountY;
+const unsigned int widthX = threadsPerBlockX * blockCountX;
+const unsigned int widthY = threadsPerBlockY * blockCountY;
 
-size_t GOLBufferSizeUint = fullCellWidthX * fullCellWidthY * sizeof(unsigned int);
+size_t GOLBufferSizeUint = widthX * widthY * sizeof(unsigned int);
 
 dim3 threadSize(threadsPerBlockX, threadsPerBlockY);
 dim3 blockSize(blockCountX, blockCountY);
 
-CustomGraphicsPipeline Scene(threadSize, blockSize, fullCellWidthX, fullCellWidthY, pointSize);
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
 
-static void RenderSceneCB()
+int main(void)
 {
-        Scene.Draw();
-}
+	GLFWwindow* window;
+	if (!glfwInit()) { return -1; }
+	window = glfwCreateWindow(widthX*pointSize, widthY*pointSize, WindowTitle, NULL, NULL);
+	if (!window){ glfwTerminate(); return -1; }
 
-int main(int argc, char** argv)
-{
-    // GLUT initialisation //
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
+	glfwMakeContextCurrent(window);
+	glfwSwapInterval(1);
 
-    // Window Settings //
-    glutInitWindowSize(fullCellWidthX * pointSize, fullCellWidthY * pointSize);
-    glutCreateWindow(WindowTitle);
-    glutFullScreen();
+	if (glewInit() != GLEW_OK)
+		std::cout << "Something went wrong in GLEW init" << std::endl;
 
-    GLenum res = glewInit();
-    if (res != GLEW_OK) 
     {
-        fprintf(stderr, "Error: '%s'\n", glewGetErrorString(res));
-        return 1;
-    }
+        LatticeBoltzmannPipeline Scene(threadSize, blockSize, widthX, widthY, pointSize);
+        assert( Scene.Init() );
+		while (!glfwWindowShouldClose(window))
+		{
+			Scene.Draw();
+			GLCall( glfwSwapBuffers(window) );
+			GLCall( glfwPollEvents() );
+		}
+	}
 
-    // OpenGL Initialisation //
-    assert( Scene.Init() );
-
-    // Glut config //
-    glutDisplayFunc(RenderSceneCB);
-
-    // Main loops //
-    glutMainLoop();
-
-    return 0;
+	glfwTerminate();
+	return 0;
 }

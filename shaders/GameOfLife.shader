@@ -6,8 +6,8 @@ varying vec4 vColor;
 
 uniform vec4 u_OnColour;
 uniform vec4 u_OffColour;
-uniform uint fullCellWidthX;
-uniform uint fullCellWidthY;
+uniform uint widthX;
+uniform uint widthY;
 
 uniform vec4 windowXY;
 //uniform float rgbData[300];
@@ -21,12 +21,12 @@ float dx; float dy;
 uint store;
 void main(void) 
 {
-	store = uint(floor(gl_VertexID/fullCellWidthX));
-	xId = gl_VertexID - (fullCellWidthX * store);
+	store = uint(floor(gl_VertexID/widthX));
+	xId = gl_VertexID - (widthX * store);
 	yId = store;
 
-	dx = (windowXY.y - windowXY.x) / float(fullCellWidthX);
-	dy = (windowXY.w - windowXY.z) / float(fullCellWidthY);
+	dx = (windowXY.y - windowXY.x) / float(widthX);
+	dy = (windowXY.w - windowXY.z) / float(widthY);
 
 	gl_Position = vec4(windowXY.x+dx/2 + xId * dx, windowXY.z+dy/2 + yId * dy, 0., 1.0);
 	//gl_Position = vec4(0., 0., 0., 1.0);
