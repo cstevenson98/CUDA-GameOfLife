@@ -1,6 +1,6 @@
 #include "Utility.h"
 
-#include "golPipeline.h"
+#include "lbPipeline.h"
 #include <iostream>
 
 bool CustomGraphicsPipeline::Init()
@@ -14,16 +14,17 @@ bool CustomGraphicsPipeline::Init()
     // Init Buffer
     glGenBuffers(1, &m_VBO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, m_fullCellWidth * m_fullCellWidth * sizeof(unsigned int), 0, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, m_fullCellWidthX * m_fullCellWidthY * sizeof(unsigned int), 0, GL_DYNAMIC_DRAW);
 
     // Attrib Pointer
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 1, GL_UNSIGNED_INT, GL_FALSE, 0, 0);
    
-    // Shader
+    // ShaderS
     m_shader = Shader("shaders/GameOfLife.shader");
     m_shader.Bind();
-	m_shader.SetUniformUint("fullCellWidth", m_fullCellWidth);
+	m_shader.SetUniformUint("fullCellWidthX", m_fullCellWidthX);
+    m_shader.SetUniformUint("fullCellWidthY", m_fullCellWidthY);
 	m_shader.SetUniform4f("u_OnColour", 1., 1., 1., 1.);
 	m_shader.SetUniform4f("u_OffColour", 0., 0., 0., 1.);
 	m_shader.SetUniform4f("windowXY", -1.0, 1.0, -1.0, 1.0);
@@ -32,7 +33,7 @@ bool CustomGraphicsPipeline::Init()
     cudaGraphicsGLRegisterBuffer(&m_resource, m_VBO, cudaGraphicsRegisterFlagsNone);
 
     unsigned int* m_DevState;
-    m_BufferSize = m_fullCellWidth * m_fullCellWidth * sizeof(unsigned int);
+    m_BufferSize = m_fullCellWidthX * m_fullCellWidthY * sizeof(unsigned int);
 	cudaGraphicsMapResources(1, &m_resource, 0);
 	cudaGraphicsResourceGetMappedPointer((void**)&m_DevState, &m_BufferSize, m_resource);
 	GolKernel_random<<<m_blocks, m_threads>>>(m_DevState, 0.5f, 0);
@@ -59,7 +60,7 @@ void CustomGraphicsPipeline::Draw()
 	cudaGraphicsUnmapResources(1, &m_resource, 0);
 	cudaFree(m_DevNextState);
 
-    glDrawArrays(GL_POINTS, 0, m_fullCellWidth * m_fullCellWidth);
+    glDrawArrays(GL_POINTS, 0, m_fullCellWidthX * m_fullCellWidthY);
 
     glutSwapBuffers();
     glutPostRedisplay();

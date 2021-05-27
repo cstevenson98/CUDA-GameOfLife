@@ -20,17 +20,21 @@ class CustomGraphicsPipeline
       Shader m_shader;
       dim3 m_threads;
       dim3 m_blocks;
-      unsigned int m_fullCellWidth;
+      unsigned int m_fullCellWidthX;
+      unsigned int m_fullCellWidthY;
       unsigned int m_pointSize;
       size_t m_BufferSize;
       struct cudaGraphicsResource* m_resource;
       
       // Constructor
-      CustomGraphicsPipeline(dim3 threads, dim3 blocks, unsigned int fullCellWidth, unsigned int pointSize) 
-         :  m_threads       ( threads ),
-            m_blocks        ( blocks ),
-            m_fullCellWidth ( fullCellWidth ),
-            m_pointSize     ( pointSize )
+      CustomGraphicsPipeline(dim3 threads, dim3 blocks, 
+                              unsigned int fullCellWidthX, unsigned int fullCellWidthY, 
+                              unsigned int pointSize) 
+         :  m_threads         ( threads ),
+            m_blocks          ( blocks ),
+            m_fullCellWidthX  ( fullCellWidthX ),
+            m_fullCellWidthY  ( fullCellWidthY ),
+            m_pointSize       ( pointSize )
       {}
 
       // Destructor

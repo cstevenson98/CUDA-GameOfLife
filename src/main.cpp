@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <cassert>
 
-#include "golPipeline.h"
+#include "lbPipeline.h"
 
 const char* WindowTitle = "Conway's Game of Life";
 
@@ -11,16 +11,21 @@ const char* WindowTitle = "Conway's Game of Life";
 ///////////////////////////////////////////////////
 const unsigned int pointSize = 2;
 
-const unsigned int threadsPerBlock = 32;
-const unsigned int blockCount = 15;
+const unsigned int threadsPerBlockX = 20;
+const unsigned int blockCountX = 64;
 
-const unsigned int fullCellWidth = threadsPerBlock * blockCount;
-size_t GOLBufferSizeUint = fullCellWidth * fullCellWidth * sizeof(unsigned int);
+const unsigned int threadsPerBlockY = 20;
+const unsigned int blockCountY = 36;
 
-dim3 threadSize(threadsPerBlock, threadsPerBlock);
-dim3 blockSize(blockCount, blockCount);
+const unsigned int fullCellWidthX = threadsPerBlockX * blockCountX;
+const unsigned int fullCellWidthY = threadsPerBlockY * blockCountY;
 
-CustomGraphicsPipeline Scene(threadSize, blockSize, fullCellWidth, pointSize);
+size_t GOLBufferSizeUint = fullCellWidthX * fullCellWidthY * sizeof(unsigned int);
+
+dim3 threadSize(threadsPerBlockX, threadsPerBlockY);
+dim3 blockSize(blockCountX, blockCountY);
+
+CustomGraphicsPipeline Scene(threadSize, blockSize, fullCellWidthX, fullCellWidthY, pointSize);
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
 
@@ -36,8 +41,9 @@ int main(int argc, char** argv)
     glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
 
     // Window Settings //
-    glutInitWindowSize(fullCellWidth * pointSize, fullCellWidth * pointSize);
+    glutInitWindowSize(fullCellWidthX * pointSize, fullCellWidthY * pointSize);
     glutCreateWindow(WindowTitle);
+    glutFullScreen();
 
     GLenum res = glewInit();
     if (res != GLEW_OK) 
