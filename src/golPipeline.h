@@ -11,7 +11,7 @@
 #include "openGLutils.h" 
 //#include "Shader.h"
 
-class LatticeBoltzmannPipeline
+class GoLPipeline
 {
    //private state variables
    public:
@@ -30,7 +30,7 @@ class LatticeBoltzmannPipeline
       struct cudaGraphicsResource* m_resource;
       
       // Constructor
-      LatticeBoltzmannPipeline(dim3 threads, dim3 blocks, 
+      GoLPipeline(dim3 threads, dim3 blocks, 
                               unsigned int widthX, unsigned int widthY, 
                               unsigned int pointSize) 
          :  m_threads   ( threads ),
@@ -41,12 +41,12 @@ class LatticeBoltzmannPipeline
       {}
 
       // Destructor
-      ~LatticeBoltzmannPipeline() 
+      ~GoLPipeline() 
       {
          glDisableVertexAttribArray(0);
       }
 
       bool Init();
       void Draw();
-      
+      void Update();
 };

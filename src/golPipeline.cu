@@ -3,7 +3,7 @@
 #include "golPipeline.h"
 #include <iostream>
 
-bool LatticeBoltzmannPipeline::Init()
+bool GoLPipeline::Init()
 {
     GLint ret = true;  
     GLclampf Red = 0.0f, Green = 0.0f, Blue = 1.0f, Alpha = 0.0f;
@@ -36,16 +36,20 @@ bool LatticeBoltzmannPipeline::Init()
     m_BufferSize = m_widthX * m_widthY * sizeof(unsigned int);
 	cudaGraphicsMapResources(1, &m_resource, 0);
 	cudaGraphicsResourceGetMappedPointer((void**)&m_DevState, &m_BufferSize, m_resource);
-	GolKernel_random<<<m_blocks, m_threads>>>(m_DevState, 0.5f, 0);
+	GolKernel_random<<<m_blocks, m_threads>>>(m_DevState, 0.75f, 0);
 	cudaGraphicsUnmapResources(1, &m_resource, 0);
 
     return ret;
 }
 
-void LatticeBoltzmannPipeline::Draw()
+void GoLPipeline::Draw()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    glDrawArrays(GL_POINTS, 0, m_widthX * m_widthY);
+}
 
+void GoLPipeline::Update()
+{
     unsigned int* m_DevState;
 	unsigned int* m_DevNextState;
 	cudaMalloc((void**)&m_DevNextState, m_BufferSize);
@@ -59,7 +63,4 @@ void LatticeBoltzmannPipeline::Draw()
 
 	cudaGraphicsUnmapResources(1, &m_resource, 0);
 	cudaFree(m_DevNextState);
-
-    glDrawArrays(GL_POINTS, 0, m_widthX * m_widthY);
-
 }
