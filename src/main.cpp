@@ -12,13 +12,13 @@ const char* WindowTitle = "Lattice Boltzmann - GPU";
 
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
-unsigned int pointSize = 8;
+unsigned int pointSize = 2;
 
 const unsigned int threadsPerBlockX = 20;
-const unsigned int blockCountX = 6;
+const unsigned int blockCountX = 22;
 
 const unsigned int threadsPerBlockY = 20;
-const unsigned int blockCountY = 6;
+const unsigned int blockCountY = 22;
 
 const unsigned int widthX = threadsPerBlockX * blockCountX;
 const unsigned int widthY = threadsPerBlockY * blockCountY;

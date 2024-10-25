@@ -21,7 +21,7 @@ bool GoLPipeline::Init()
     glVertexAttribPointer(0, 1, GL_UNSIGNED_INT, GL_FALSE, 0, 0);
 
     // ShaderS
-    m_shader = Shader("shaders/GameOfLife.shader");
+    m_shader = Shader("/home/conor/dev/CUDA-GameOfLife/shaders/GameOfLife.shader");
     m_shader.Bind();
 	m_shader.SetUniformUint("widthX", m_widthX);
     m_shader.SetUniformUint("widthY", m_widthY);

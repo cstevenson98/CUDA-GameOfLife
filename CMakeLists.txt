@@ -1,8 +1,18 @@
 # Project cuda-gol
 cmake_minimum_required(VERSION 3.10)
+# SET DEFAULT CUDA ARCHITECTURE
+
+# set cuda compiler for .cu files
+set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
+
+# set the cuda architecture
+set(CMAKE_CUDA_ARCHITECTURES 75)
 
 # Set the project name
-project(cuda-gol)
+project(cuda-gol LANGUAGES CXX CUDA)
+
+# include cuda headers
+include_directories(/usr/local/cuda-12.6/include)
 
 set( _glfw3_HEADER_SEARCH_DIRS
         "/usr/include"
@@ -40,10 +50,6 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(GLFW3 DEFAULT_MSG
 
 message(STATUS "GLFW3_LIBRARY: ${GLFW3_LIBRARY}")
 
-# set cuda compiler for .cu files
-set(CMAKE_CXX_COMPILER /usr/local/cuda-12.6/bin/nvcc)
-set(CMAKE_CUDA_COMPILER /usr/local/cuda-12.6/bin/nvcc)
-
 # Set the source files
 set(SOURCE_FILES
         src/main.cpp
@@ -57,6 +63,8 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
+
 # Set the executable
+include_directories(src)
 add_executable(cuda-gol ${SOURCE_FILES})
 target_link_libraries(cuda-gol ${GLFW3_LIBRARY} ${OPENGL_LIBRARIES} GLEW::GLEW)
