@@ -6,6 +6,7 @@
 #include <chrono>
 
 #include "golPipeline.h"
+#include "MaxwellPipeline.h"
 #include "Utility.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -18,10 +19,10 @@ const char *WindowTitle = "Lattice Boltzmann - GPU";
 unsigned int pointSize = 2;
 
 const unsigned int threadsPerBlockX = 20;
-const unsigned int blockCountX = 22;
+const unsigned int blockCountX = 45;
 
 const unsigned int threadsPerBlockY = 20;
-const unsigned int blockCountY = 22;
+const unsigned int blockCountY = 25;
 
 const unsigned int widthX = threadsPerBlockX * blockCountX;
 const unsigned int widthY = threadsPerBlockY * blockCountY;
@@ -85,93 +86,6 @@ void rle2state(std::string &rle, std::vector<unsigned int> &in, int x, int y) {
     //std::cout << currentNums;
 }
 
-///////////////////////////////////////////////////
-// Vertex Shader source code
-const char* vertexShaderSource = R"(
-#version 330 core
-layout (location = 0) in vec3 aPos;
-void main()
-{
-    gl_Position = vec4(aPos, 1.0);
-}
-)";
-
-// Fragment Shader source code
-const char* fragmentShaderSource = R"(
-#version 330 core
-out vec4 FragColor;
-void main()
-{
-    FragColor = vec4(1.0, 0.5, 0.2, 1.0);
-}
-)";
-
-// Function to compile shader and check for errors
-unsigned int compileShader(unsigned int type, const char* source) {
-    unsigned int shader = glCreateShader(type);
-    glShaderSource(shader, 1, &source, nullptr);
-    glCompileShader(shader);
-
-    int success;
-    char infoLog[512];
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-        std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    return shader;
-}
-
-// Function to create shader program
-unsigned int createShaderProgram() {
-    unsigned int vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
-    unsigned int fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-
-    unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    int success;
-    char infoLog[512];
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
-        std::cout << "ERROR::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    return shaderProgram;
-}
-
-// Function to set up vertex data and buffers
-unsigned int setupTriangle() {
-    float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f
-    };
-
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    return VAO;
-}
-
 
 int main(void) {
     GLFWwindow *window;
@@ -194,35 +108,34 @@ int main(void) {
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
+    ImGuiIO &io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // IF using Docking Branch
 
     // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
     ImGui_ImplOpenGL3_Init("#version 130");
-    unsigned int shaderProgram = createShaderProgram();
-    unsigned int VAO = setupTriangle();
 
-    glfwSetKeyCallback(window, key_callback);
+    glfwSetKeyCallback(window, nullptr); // key_callback);
     {
-        GoLPipeline Scene(threadSize, blockSize, widthX, widthY, pointSize);
-        assert(Scene.Init());
+        GoLPipeline gol_pipeline(threadSize, blockSize, widthX, widthY, pointSize);
+        MaxwellPipeline maxwell_pipeline(threadSize, blockSize, widthX, widthY);
+        assert(maxwell_pipeline.Init());
+        auto generations = new int(1);
         while (!glfwWindowShouldClose(window)) {
             GLCall(glfwPollEvents());
-            if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
-            {
+            if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0) {
                 ImGui_ImplGlfw_Sleep(10);
                 continue;
             }
 
-
             // Rendering
             // if (RUN_SIMULATION)
-            //     Scene.Update();
+            //     maxwell_pipeline.Update(*generations);
             // if (SKIP_FORWARD)
-            //     Scene.Update();
+            //     gol_pipeline.Update(*generations);
             // SKIP_FORWARD = false;
             // if (READ_INSERT) {
             //     std::string filename;
@@ -232,39 +145,33 @@ int main(void) {
             //     for (const auto &i: state)
             //         std::cout << i;
             // }
-            glClear(GL_COLOR_BUFFER_BIT );
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            //
-            Scene.Draw();
-            // In your main function, before the rendering loop
+            maxwell_pipeline.UpdateField();
+            maxwell_pipeline.Draw();
 
-            // In your rendering loop, replace the commented Scene.Draw(); line with the following
-            // glUseProgram(shaderProgram);
-            // glBindVertexArray(VAO);
-            // glDrawArrays(GL_TRIANGLES, 0, 3);
-            // glBindVertexArray(0);
             // Start the Dear ImGui frame
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
-
-            // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-            {
+            ImGui::NewFrame(); {
                 static float f = 0.0f;
                 static int counter = 0;
 
-                ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+                ImGui::Begin("Settings"); // Create a window called "Hello, world!" and append into it.
+                if (ImGui::Button(RUN_SIMULATION ? "Pause" : "Run") || ImGui::IsKeyPressed(ImGuiKey_E))
+                    RUN_SIMULATION = !RUN_SIMULATION;
 
-                ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+                // Reset button
+                if (ImGui::Button("Reset")) {
+                    gol_pipeline.Reset();
+                }
 
-                ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+                // Number of generations
+                ImGui::SliderInt("Generations", generations, 1, 499);
 
-                if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                    counter++;
-                ImGui::SameLine();
-                ImGui::Text("counter = %d", counter);
-
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+                // Frames per second
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+                            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
                 ImGui::End();
             }
 
@@ -272,8 +179,6 @@ int main(void) {
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             GLCall(glfwSwapBuffers(window));
         }
-
-
     }
 
     // Cleanup

@@ -20,7 +20,10 @@ set(SOURCE_FILES
         src/main.cpp
         src/golCUDA.cu
         src/golPipeline.cu
-        src/openGLutils.cpp)
+        src/openGLutils.cpp
+        src/MaxwellPipeline.cu
+        src/MaxwellPipeline.h
+        src/maxwellCUDA.cu)
 
 set(OpenGL_GL_PREFERENCE "GLVND")
 

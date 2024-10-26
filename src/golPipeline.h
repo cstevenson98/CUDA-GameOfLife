@@ -47,5 +47,7 @@ public:
 
     void Draw();
 
-    void Update();
+    void Update(unsigned int generations);
+
+    void Reset();
 };
