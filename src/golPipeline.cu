@@ -6,7 +6,7 @@
 bool GoLPipeline::Init()
 {
     GLint ret = true;  
-    GLclampf Red = 0.0f, Green = 0.0f, Blue = 1.0f, Alpha = 0.0f;
+    GLclampf Red = 0.0f, Green = 0.0f, Blue = 0.0f, Alpha = 0.0f;
 
     glClearColor(Red, Green, Blue, Alpha);
     glPointSize(m_pointSize);
@@ -22,14 +22,8 @@ bool GoLPipeline::Init()
 
     // ShaderS
     m_shader = Shader("/home/conor/dev/CUDA-GameOfLife/shaders/GameOfLife.shader");
-    m_shader.Bind();
-	m_shader.SetUniformUint("widthX", m_widthX);
-    m_shader.SetUniformUint("widthY", m_widthY);
-	m_shader.SetUniform4f("u_OnColour", 1., 1., 1., 1.);
-	m_shader.SetUniform4f("u_OffColour", 0., 0., 0., 1.);
-	m_shader.SetUniform4f("windowXY", -1.0, 1.0, -1.0, 1.0);
 
-    // CUDA graphics resource 
+	// CUDA graphics resource
     cudaGraphicsGLRegisterBuffer(&m_resource, m_VBO, cudaGraphicsRegisterFlagsNone);
 
     unsigned int* m_DevState;
@@ -39,13 +33,26 @@ bool GoLPipeline::Init()
 	GolKernel_random<<<m_blocks, m_threads>>>(m_DevState, 0.75f, 0);
 	cudaGraphicsUnmapResources(1, &m_resource, 0);
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     return ret;
 }
 
 void GoLPipeline::Draw()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-    glDrawArrays(GL_POINTS, 0, m_widthX * m_widthY);
+
+	m_shader.Bind();
+	m_shader.SetUniformUint("widthX", m_widthX);
+	m_shader.SetUniformUint("widthY", m_widthY);
+	m_shader.SetUniform4f("u_OnColour", 1., 1., 1., 1.);
+	m_shader.SetUniform4f("u_OffColour", 0., 0., 0., 1.);
+	m_shader.SetUniform4f("windowXY", -1.0, 1.0, -1.0, 1.0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+	glDrawArrays(GL_POINTS, 0, m_widthX * m_widthY);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	m_shader.Unbind();
 }
 
 void GoLPipeline::Update()
