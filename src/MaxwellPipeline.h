@@ -14,6 +14,7 @@
 class MaxwellPipeline {
 public:
     VertexBuffer m_vbField;
+    VertexBuffer m_vbFieldLines;
     VertexBuffer m_vbCharges;
     VertexArray m_vaField;
     VertexArray m_vaCharges;
@@ -23,15 +24,18 @@ public:
     Shader m_shaderCharges;
 
     GLuint m_VBOField;
+    GLuint m_VBOFieldLines;
     GLuint m_VBOCharges;
     dim3 m_threads;
     dim3 m_blocks;
     unsigned int m_widthX;
     unsigned int m_widthY;
     size_t m_BufferSizeField;
+    size_t m_BufferSizeFieldLines;
     size_t m_BufferSizeCharges;
-    struct cudaGraphicsResource *m_resourceField;
-    struct cudaGraphicsResource *m_resourceCharges;
+    cudaGraphicsResource *m_resourceField;
+    cudaGraphicsResource *m_resourceFieldLines;
+    cudaGraphicsResource *m_resourceCharges;
 
     MaxwellPipeline(dim3 threads, dim3 blocks, unsigned int widthX, unsigned int widthY);
     ~MaxwellPipeline();
@@ -40,6 +44,7 @@ public:
     void DrawField();
     void Draw();
     void UpdateField();
+    void UpdateFieldLines();
     void UpdateCharges();
     void Reset();
 };

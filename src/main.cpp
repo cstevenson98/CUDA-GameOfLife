@@ -19,10 +19,10 @@ const char *WindowTitle = "Lattice Boltzmann - GPU";
 unsigned int pointSize = 2;
 
 const unsigned int threadsPerBlockX = 20;
-const unsigned int blockCountX = 45;
+const unsigned int blockCountX = 22;
 
 const unsigned int threadsPerBlockY = 20;
-const unsigned int blockCountY = 25;
+const unsigned int blockCountY = 22;
 
 const unsigned int widthX = threadsPerBlockX * blockCountX;
 const unsigned int widthY = threadsPerBlockY * blockCountY;
@@ -40,15 +40,12 @@ bool RUN_SIMULATION = false;
 bool SKIP_FORWARD = false;
 bool READ_INSERT = false;
 
-// Callbacks.
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_E && action == GLFW_PRESS)
-        RUN_SIMULATION = !RUN_SIMULATION;
-    if (key == GLFW_KEY_F && action == GLFW_PRESS)
-        SKIP_FORWARD = true;
-    if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
-        READ_INSERT = true;
-}
+enum sim {
+    GOL,
+    MAXWELL
+};
+
+sim currentSim = GOL;
 
 ///////////////////////////////////////////////////
 
@@ -123,6 +120,7 @@ int main(void) {
         GoLPipeline gol_pipeline(threadSize, blockSize, widthX, widthY, pointSize);
         MaxwellPipeline maxwell_pipeline(threadSize, blockSize, widthX, widthY);
         assert(maxwell_pipeline.Init());
+        assert(gol_pipeline.Init());
         auto generations = new int(1);
         while (!glfwWindowShouldClose(window)) {
             GLCall(glfwPollEvents());
@@ -131,24 +129,27 @@ int main(void) {
                 continue;
             }
 
-            // Rendering
-            // if (RUN_SIMULATION)
-            //     maxwell_pipeline.Update(*generations);
-            // if (SKIP_FORWARD)
-            //     gol_pipeline.Update(*generations);
-            // SKIP_FORWARD = false;
-            // if (READ_INSERT) {
-            //     std::string filename;
-            //     std::vector<unsigned int> state;
-            //     std::cin >> filename;
-            //     rle2state(filename, state, 0, 0);
-            //     for (const auto &i: state)
-            //         std::cout << i;
-            // }
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            maxwell_pipeline.UpdateField();
-            maxwell_pipeline.Draw();
+            if (RUN_SIMULATION) {
+                switch (currentSim) {
+                    case GOL:
+                        gol_pipeline.Update(*generations);
+                        break;
+                    case MAXWELL:
+                        maxwell_pipeline.UpdateField();
+                        break;
+                }
+            }
+
+            switch (currentSim) {
+                case GOL:
+                    gol_pipeline.Draw();
+                    break;
+                case MAXWELL:
+                    maxwell_pipeline.Draw();
+                    break;
+            }
 
             // Start the Dear ImGui frame
             ImGui_ImplOpenGL3_NewFrame();
@@ -157,7 +158,13 @@ int main(void) {
                 static float f = 0.0f;
                 static int counter = 0;
 
+                // tabs
+
                 ImGui::Begin("Settings"); // Create a window called "Hello, world!" and append into it.
+                ImGui::Text("Choose simulation:"); // Display some text (you can use a format strings too)
+                ImGui::RadioButton("Game of Life", (int *) &currentSim, GOL);
+                ImGui::RadioButton("Maxwell", (int *) &currentSim, MAXWELL);
+
                 if (ImGui::Button(RUN_SIMULATION ? "Pause" : "Run") || ImGui::IsKeyPressed(ImGuiKey_E))
                     RUN_SIMULATION = !RUN_SIMULATION;
 
