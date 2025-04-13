@@ -1,9 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <GL/freeglut.h>
 #include <stdio.h>
 #include <cassert>
-#include <chrono>
 
 #include "golPipeline.h"
 #include "MaxwellPipeline.h"
