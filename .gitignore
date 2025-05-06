@@ -33,3 +33,10 @@
 .idea
 imgui
 cmake-build-debug
+build
+
+# ImGui settings
+imgui.ini
+
+# cmake
+CMakeUserPresets.json

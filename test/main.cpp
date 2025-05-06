@@ -1,5 +1,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 #include <filesystem>
 #include <fstream>
@@ -81,6 +84,19 @@ int main() {
   // Print OpenGL version
   std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 
+  // Setup ImGui
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO();
+  io.ConfigFlags |=
+      ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+  io.ConfigFlags |=
+      ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+
+  // Setup Platform/Renderer backends
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  ImGui_ImplOpenGL3_Init("#version 330");
+
   // Load and compile shaders
   std::string vertexSource = loadShaderSource("vertex.glsl");
   std::string fragmentSource = loadShaderSource("fragment.glsl");
@@ -134,11 +150,30 @@ int main() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
 
-  // Get uniform location
+  // Get uniform locations
   GLint timeLoc = glGetUniformLocation(shaderProgram, "time");
+  GLint colorLoc = glGetUniformLocation(shaderProgram, "color");
+  GLint speedLoc = glGetUniformLocation(shaderProgram, "speed");
+
+  // GUI state
+  float color[3] = {1.0f, 1.0f, 1.0f};
+  float speed = 1.0f;
 
   // Main loop
   while (!glfwWindowShouldClose(window)) {
+    // Start the ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    // Create ImGui window
+    ImGui::Begin("Triangle Controls");
+    ImGui::ColorEdit3("Color", color);
+    ImGui::SliderFloat("Animation Speed", &speed, 0.1f, 5.0f);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+                1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::End();
+
     // Clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -146,13 +181,19 @@ int main() {
     // Use shader program
     glUseProgram(shaderProgram);
 
-    // Update time uniform
+    // Update uniforms
     float time = glfwGetTime();
     glUniform1f(timeLoc, time);
+    glUniform3f(colorLoc, color[0], color[1], color[2]);
+    glUniform1f(speedLoc, speed);
 
     // Draw triangle
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    // Render ImGui
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // Swap buffers and poll events
     glfwSwapBuffers(window);
@@ -160,6 +201,10 @@ int main() {
   }
 
   // Clean up
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
   glDeleteProgram(shaderProgram);
